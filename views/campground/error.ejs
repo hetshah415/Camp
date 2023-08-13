@@ -1,0 +1,11 @@
+<% layout('layout/boilerplate')%>
+<div class="alert alert-danger" role="alert">
+  <h4 class="alert-heading">Error!</h4>
+  <p>Status : <%= statusCode %></p>
+  <hr />
+  <% if(ExpressMessage) {%>
+  <p class="mb-0">Error Message : <%= ExpressMessage %></p>
+  <%} else {%>
+  <p>No specific error message</p>
+  <%}%>
+</div>
