@@ -1,6 +1,6 @@
 {
   "scripts":{
-    "start":"node backend.js"
+    "start":"node backend/backend.js"
   },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.15.2",
