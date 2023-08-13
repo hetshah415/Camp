@@ -1,4 +1,7 @@
 {
+  "scripts":{
+    "start":"node backend.js"
+  },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.15.2",
     "body-parser": "^1.20.2",
