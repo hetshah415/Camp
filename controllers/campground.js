@@ -1,16 +1,24 @@
+require('dotenv').config();
 const Campground = require("../models/campground");
 const { ObjectId } = require("mongodb");
 const Joi = require("joi");
 const ExpressError = require("../util/ExpressError");
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
-const MapBoxToken = 'pk.eyJ1IjoiaGV0c2hhaDQxNSIsImEiOiJjbGs3aWZ0OTUwOHV6M2tvODM0YTJidG04In0.Hw18d6g7WYqYsvExNJbn9Q';
+const MapBoxToken = process.env.MAPBOX_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: MapBoxToken });
 
+/**
+ * Retrieves all campgrounds from the database and renders the show page.
+ */
 module.exports.index = async (req, res) => {
   const campgrounds = await Campground.find({});
   res.render("campground/show", { campgrounds });
 };
 
+/**
+ * Displays detailed information about a specific campground.
+ * Throws an error if the campground ID is invalid or the campground is not found.
+ */
 module.exports.detailCampground = async (req, res) => {
   const { id } = req.params;
 
@@ -33,10 +41,17 @@ module.exports.detailCampground = async (req, res) => {
   res.render("campground/detail", { campground: detailCampground });
 };
 
+/**
+ * Renders the form for adding a new campground.
+ */
 module.exports.getNew = async (req, res) => {
   res.render("campground/new");
 };
 
+/**
+ * Creates a new campground with the provided data and redirects to the campgrounds page.
+ * If geocoding fails or validation fails, it throws an error.
+ */
 module.exports.createNew = async (req, res, next) => {
   const result = await geocodingClient.forwardGeocode({
     query: req.body.location,
@@ -48,7 +63,6 @@ module.exports.createNew = async (req, res, next) => {
     title: Joi.string().required(),
     location: Joi.string().required(),
     price: Joi.number().required().min(0),
-    // image: Joi.required(),
     description: Joi.string(),
   });
 
@@ -65,12 +79,20 @@ module.exports.createNew = async (req, res, next) => {
   res.redirect("/campgrounds");
 };
 
+/**
+ * Renders the edit form for an existing campground.
+ * Throws an error if the campground is not found.
+ */
 module.exports.edit = async (req, res) => {
   const { id } = req.params;
   const editProduct = await Campground.findById(id);
   res.render("campground/edit", editProduct);
 };
 
+/**
+ * Updates an existing campground and redirects to the campground detail page.
+ * Handles image deletion and addition.
+ */
 module.exports.performEdit = async (req, res) => {
   const { title, location, image, price, description } = req.body;
   const { id } = req.params;
@@ -89,12 +111,15 @@ module.exports.performEdit = async (req, res) => {
     await updatedCampground.updateOne({
       $pull: { image: { filename: { $in: req.body.deletedItem } } },
     });
-    console.log("here!!!!");
   }
   req.flash("success", "successfully updated campground");
   res.redirect("/campgrounds");
 };
 
+
+/**
+ * Deletes a campground and redirects to the campgrounds page.
+ */
 module.exports.deleteCampground = async (req, res) => {
   const { id } = req.params;
   const deleteProduct = await Campground.deleteOne({ _id: id });
